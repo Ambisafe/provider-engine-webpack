@@ -6,9 +6,11 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "crypto-browserify": "^3.10.0",
+    "crypto-browserify": "^3.11.0",
     "web3": "^0.15.3",
-    "web3-provider-engine": "^7.3.0"
+    "web3-provider-engine": "^7.3.0",
+    "scryptsy": "^1.2.1",
+    "aes-js": "^1.0.0"
   },
   "devDependencies": {
     "babel-core": "^6.7.4",

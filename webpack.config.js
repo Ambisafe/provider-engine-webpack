@@ -1,10 +1,15 @@
 var path = require('path')
+var webpack = require('webpack')
 
 module.exports = {
-  entry: "./index.js",
+  entry: {web3: "./web3.js",
+    provider: "./provider.js",
+    util: "./util.js"
+  },
   output: {
     path: path.join(__dirname, 'browser'),
-    filename: "bundle.js",
+    filename: "[name].bundle.js",
+    chunkFilename: "[id].bundle.js",
     library: "Lib",
     libraryTarget: "var"
   },
