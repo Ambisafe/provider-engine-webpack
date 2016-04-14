@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="">
+  <head>
+    <meta charset="utf-8">
+    <title></title>
+  </head>
+  <body>
+    <script>
+
+      function getParameterByName(name, url) {
+        if (!url) url = window.location.href;
+        name = name.replace(/[\[\]]/g, "\\$&");
+        var regex = new RegExp("[?&]" + name + "(=([^&#]*)|&|#|$)", "i"),
+          results = regex.exec(url);
+        if (!results) return null;
+        if (!results[2]) return '';
+        return decodeURIComponent(results[2].replace(/\+/g, " "));
+      }
+
+      window.addEventListener('message', function(evt) {
+        var data = evt.data;
+
+        var worker = new Worker((data.action === 'import')?'wallet-import.js':'wallet-export.js');
+        worker.addEventListener('message', function (event) {
+          window.top.postMessage(JSON.parse(JSON.stringify(event.data)), evt.origin);
+        });
+        worker.addEventListener('error', function (event) {
+          window.top.postMessage(JSON.parse(JSON.stringify(event.data)), evt.origin);
+        });
+        worker.postMessage(data);
+      }, false);
+
+      if (window.Worker && window.Blob && window.crypto && window.URL) {
+        window.top.postMessage({action: 'loaded'}, getParameterByName('origin'));
+      } else {
+        window.top.postMessage({action: 'error', message: 'browser requirements not satisfied.'}, getParameterByName('origin'));
+      }
+
+    </script>
+  </body>
+</html>

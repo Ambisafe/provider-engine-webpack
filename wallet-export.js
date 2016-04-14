@@ -30,10 +30,13 @@ onmessage = function(event) {
 
     var salt = getRandomValues(32);
     var iv = getRandomValues(16);
-    var n = 256
+    var n = 65536;
+    var lastProgress = 0;
 
     var derivedKey = scryptsy(new Buffer(password), salt, n, 1, 8, 32, function(progress) {
-      if (callback) {
+      var rounded = Math.round(progress.percent);
+      if (lastProgress !== rounded && callback) {
+        lastProgress = rounded;
         callback(progress.percent);
       }
     });

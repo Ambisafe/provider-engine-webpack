@@ -1,4 +1,4 @@
-importScripts('browser/util.bundle.js');
+importScripts('util.bundle.js');
 
 var Buffer = Lib.buffer.Buffer;
 var ethUtil = Lib.util;
@@ -54,10 +54,13 @@ onmessage = function(event) {
       if (dkLen !== 32) {
         throw new Error("Invalid JSON Wallet (dkLen != 32)");
       }
+      var lastProgress = 0;
 
       // Derive the key, calling the callback periodically with progress updates
       var derivedKey = scryptsy(new Buffer(password), salt, N, r, p, dkLen, function(progress) {
-        if (callback) {
+        var rounded = Math.round(progress.percent);
+        if (lastProgress !== rounded && callback) {
+          lastProgress = rounded;
           callback(progress.percent);
         }
       });

@@ -19,91 +19,105 @@
 
     -->
     <script>
-    // ################ SERIALIZE WALLET
+// ################ SERIALIZE WALLET
       // var Buffer = Lib.buffer.Buffer;
       // var fastSha256 = Lib;
-    
-      // function loadWallet(seed) {
-      //   if (!seed._isBuffer) {
-      //       throw new Error('seed must be a buffer');
+
+      // var entropy = '1234567890abcdefgh1234567890ab';
+      // if (typeof(entropy) !== 'string' || entropy.length !== 30) {
+      //     throw new Error('entropy must be a string of length 30');
+      // }
+      // entropy = new Buffer(entropy);
+      // var seed = new Buffer(fastSha256(entropy));
+      // var hexSeed = seed.toString('hex');
+      // console.log(hexSeed);
+      // var password = 'test9900';
+
+      // var path = 'https://s3.eu-central-1.amazonaws.com/keythereum/iframe.html?origin='+encodeURIComponent(location.origin);
+      // pathArray = path.split( '/' );
+
+      // window.addEventListener('message', function(evt) {
+      //   if (evt.origin !== pathArray[0] + '//' + pathArray[2]) {
+      //     //ignoring
+      //     return;
       //   }
+      //   if (!evt.data || evt.data.action == 'error') {
+      //     console.log('error');
+      //     console.dir(evt.data.error);
+      //     return;
+      //   }
+      //   var data = evt.data;
+      //   if (data.action === 'loaded') {
+      //     console.log('worker loaded, starting export ...');
 
-      //   var hexSeed = seed.toString('hex');
-      //   console.log(hexSeed);
-
-      //   //TODO: make wallet here to use address
-
-      //   if (window.Worker && window.Blob && window.crypto && window.URL) {
-
-      //       var worker = new Worker('wallet-export.js');
-      //       worker.addEventListener('message', function (event) {
-      //           var data = event.data;
-      //           if (data.action === 'progress') {
-      //               console.log(parseInt(data.percent) + '%');
-      //           } else if (data.action === 'exported') {
-      //               console.log('exported');
-      //               console.dir(JSON.stringify(data.json));
-      //           }
-      //       });
-
-      //       var password = 'test9900';
-
-      //       worker.postMessage({
-      //           action: "export",
-      //           hexSeed: hexSeed,
-      //           password: password,
-      //           randomBytes: crypto.getRandomValues(new Uint8Array(64)),
-      //       });
-
+      //     iframe.contentWindow.postMessage({
+      //       action: "export",
+      //       hexSeed: hexSeed,
+      //       password: password,
+      //       randomBytes: crypto.getRandomValues(new Uint8Array(64))
+      //     }, '*');
+      //   } else if (data.action === 'progress') {
+      //     console.log(parseInt(data.percent) + '%');
+      //   } else if (data.action === 'exported') {
+      //     console.log('exported');
+      //     console.dir(data.json);
       //   } else {
-      //       console.error('environment not set up');
+      //     console.log('uknown event' + data.action);
+      //     console.dir(data)
       //   }
+      // }, false);
 
-      // }
-      // function entropyToSeed(entropy) {
-      //     if (typeof(entropy) !== 'string' || entropy.length !== 30) {
-      //         throw new Error('entropy must be a string of length 30');
-      //     }
-      //     entropy = new Buffer(entropy);
+      // var iframe = document.createElement('iframe');
+      // iframe.src = path;
+      // iframe.style.display = 'none';
+      // document.body.appendChild(iframe);
 
-      //     return new Buffer(fastSha256(entropy));
-      // }
-      // loadWallet(entropyToSeed('1234567890abcdefgh1234567890ab'));
+// ################ DESERIALIZE WALLET
 
-      // ################ DESERIALIZE WALLET
-      var Buffer = Lib.buffer.Buffer;
       var json = '{"address":"0x0735a7a806ac6fffe26318f83102d50675c95dfa","Crypto":{"cipher":"aes-128-ctr","cipherparams":{"iv":"e944473d5ecd6ef459fed5d4b9eaa947"},"ciphertext":"e933b9e9a7428d6c3562d40d49e7712c37a66156296e45f37b704603671e1404","kdf":"scrypt","kdfparams":{"dklen":32,"n":256,"r":1,"p":8,"salt":"3539d3678a96330c8d91ed6a9cf9b7487a60a72e18751b68f4014973811580e9"},"mac":"75addd112ce529c976d25445a898c8067cb31d57be40de8d5081372196db09c9"},"version":3}';
 
       var password = 'test9900';
 
-      var worker = new Worker('wallet-deserialize.js');
-      worker.addEventListener('message', function (event) {
-        var data = event.data;
-        if (data.action === 'progress') {
-          console.log(parseInt(data.percent) + '%');
-        } else if (data.action === 'error') {
+      var path = 'https://s3.eu-central-1.amazonaws.com/keythereum/iframe.html?origin='+encodeURIComponent(location.origin);
+      pathArray = path.split( '/' );
+
+
+      window.addEventListener('message', function(evt) {
+        if (evt.origin !== pathArray[0] + '//' + pathArray[2]) {
+          //ignoring
+          return;
+        }
+        if (!evt.data || evt.data.action == 'error') {
           console.log('error');
-          console.dir(data.error);
+          console.dir(evt.data.error);
+          return;
+        }
+        var data = evt.data;
+        if (data.action === 'loaded') {
+          console.log('worker loaded, starting import ...');
+          iframe.contentWindow.postMessage({
+              action: 'import',
+              json: json,
+              password: password,
+          }, '*');
+        } else if (data.action === 'progress') {
+          console.log(parseInt(data.percent) + '%');
         } else if (data.action === 'imported') {
           if (data.hexSeed === null) {
-            console.log('pageImport: Incorrect password')
-
+            console.log('Message Authentication Code mismatch (wrong password)')
           } else {
-            console.log('pageWallet: Wallet successfully imported: '+ data.hexSeed);
+            console.log('Wallet successfully imported: '+ data.hexSeed);
           }
+        }  else {
+          console.log('uknown event' + data.action);
+          console.dir(data)
         }
-      });
+      }, false);
 
-      worker.addEventListener('error', function (event) {
-        console.log('error');
-        console.dir(event);
-      });
-
-      worker.postMessage({
-          action: "import",
-          json: json,
-          password: password,
-      });
+      var iframe = document.createElement('iframe');
+      iframe.src = path;
+      iframe.style.display = 'none';
+      document.body.appendChild(iframe);
     </script>
   </body>
 </html>
