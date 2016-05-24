@@ -2,8 +2,7 @@ var path = require('path')
 var webpack = require('webpack')
 
 module.exports = {
-  entry: {web3: "./web3.js",
-    provider: "./provider.js",
+  entry: {provider: "./index.js",
     util: "./util.js"
   },
   output: {

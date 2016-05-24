@@ -17,20 +17,26 @@
         return decodeURIComponent(results[2].replace(/\+/g, " "));
       }
 
+      var registered = false;
+
       window.addEventListener('message', function(evt) {
         var data = evt.data;
 
         var worker = new Worker((data.action === 'import')?'wallet-import.js':'wallet-export.js');
-        worker.addEventListener('message', function (event) {
-          window.top.postMessage(JSON.parse(JSON.stringify(event.data)), evt.origin);
-        });
-        worker.addEventListener('error', function (event) {
-          window.top.postMessage(JSON.parse(JSON.stringify(event.data)), evt.origin);
-        });
+
+        if (!registered) {
+          worker.addEventListener('message', function (event) {
+            window.top.postMessage(JSON.parse(JSON.stringify(event.data)), evt.origin);
+          });
+          worker.addEventListener('error', function (event) {
+            window.top.postMessage(JSON.parse(JSON.stringify(event.data)), evt.origin);
+          });
+        }
+
         worker.postMessage(data);
       }, false);
 
-      if (window.Worker && window.Blob && window.crypto && window.URL) {
+      if (window.Worker && window.crypto) {
         window.top.postMessage({action: 'loaded'}, getParameterByName('origin'));
       } else {
         window.top.postMessage({action: 'error', message: 'browser requirements not satisfied.'}, getParameterByName('origin'));
